@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  mamba-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # or "all" to make all GPUs available 
+              capabilities: [gpu]
+    volumes:
+      - .:/app  # Mount your project directory (optional, for development)
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3 # Use a specific version
+    environment:
+      - discovery.type=single-node  # For single-node development
+    ports:
+      - 9200:9200
+    volumes:
+      - esdata:/usr/share/elasticsearch/data # Persist Elasticsearch data
+
+volumes:
+    esdata:
