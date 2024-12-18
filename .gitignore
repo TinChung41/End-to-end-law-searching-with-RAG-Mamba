@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+elasticsearch/data/*
+!elasticsearch/data/.keep
+
+temp_evn/*
+!temp_evn.keep
+
+
 # C extensions
 *.so
 
@@ -163,3 +170,5 @@ cython_debug/
 codestral_mamba_api.ipynb
 Note.txt
 list_of_mamba_model_790_hf_qa.ipynb
+note.txt
+requirements copy.txt
