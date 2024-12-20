@@ -169,6 +169,6 @@ cython_debug/
 #.idea/
 codestral_mamba_api.ipynb
 Note.txt
-list_of_mamba_model_790_hf_qa.ipynb
 note.txt
 requirements copy.txt
+.env
