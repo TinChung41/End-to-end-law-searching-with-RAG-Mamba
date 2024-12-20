@@ -11,11 +11,13 @@
         build-essential \
         git
 
-    # Copy the requirements file into the container
-    COPY requirements.txt /app/
+# Copy the requirements file into the container
+COPY requirements.txt /app/
 
-    # Install Python dependencies from the requirements file
-    RUN pip3 install --no-cache-dir -r requirements.txt
+# Install Python dependencies from the requirements file
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-    # Copy your application code into the container
-    COPY . /app
+# Copy your application code into the container
+COPY . /app
+# Start the container with bash
+CMD ["/bin/bash"]     
