@@ -9,6 +9,10 @@ elasticsearch/data/*
 temp_evn/*
 !temp_evn.keep
 
+temp_env/*
+!temp_env.keep
+
+
 
 # C extensions
 *.so
