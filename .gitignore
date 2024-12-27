@@ -6,6 +6,9 @@ __pycache__/
 elasticsearch/data/*
 !elasticsearch/data/.keep
 
+container_env/elasticsearch/data/*
+!container_env/elasticsearch/data/.keep
+
 temp_evn/*
 !temp_evn.keep
 
