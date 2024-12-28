@@ -11,3 +11,23 @@ services:
       - 9300:9300
     volumes:
       - ./elasticsearch/data:/usr/share/elasticsearch/data
+
+  jupyter_container:
+    image: ubuntu_img  # Use your existing image
+    container_name: ubuntu_container_compose # Give it a name
+    ports:
+      - 8888:8888
+    volumes:
+      - ./:/app
+    depends_on:
+      - elasticsearch_compose
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all  # Or specify a number
+              capabilities: [gpu]  # This line was correct, but the indentation was off
+    command: ["jupyter", "notebook", "--ip", "0.0.0.0", "--port", "8888", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
