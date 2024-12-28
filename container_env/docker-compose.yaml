@@ -1,13 +1,11 @@
-version: '3.8'
-
 services:
-  elasticsearch_1:
+  elasticsearch_compose:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
     container_name: elasticsearch_compose
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms8g -Xmx12g
+      - ES_JAVA_OPTS=-Xms4g -Xmx4g  # Adjusted based on your docker run command
     ports:
       - 9200:9200
       - 9300:9300

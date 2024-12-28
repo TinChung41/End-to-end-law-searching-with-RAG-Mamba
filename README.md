@@ -53,6 +53,23 @@ The system is monitored using **Grafana**, providing real-time insights into key
 
 ## How to Run
 
+cd to the Correct Directory:
+Always cd into the directory containing your docker-compose.yaml file before running any docker compose commands. In your case, this is:
+cd /home/tinchung/Documents/GitHub/End-to-end-law-searching-with-RAG-Mamba/container_env
+Use code with caution.
+Bash
+Or, on Windows:
+cd C:\Users\tinchung\Documents\GitHub\End-to-end-law-searching-with-RAG-Mamba\container_env
+Use code with caution.
+Bash
+Use -f Flag (Explicitly):
+Even when you're in the correct directory, it's a good practice to use the -f flag to explicitly specify the path to your docker-compose.yaml file. This eliminates ambiguity and ensures that the correct file is always used.
+# Linux/macOS:
+sudo docker compose -f /home/tinchung/Documents/GitHub/End-to-end-law-searching-with-RAG-Mamba/container_env/docker-compose.yaml up -d
+
+# Windows:
+docker compose -f C:\Users\tinchung\Documents\GitHub\End-to-end-law-searching-with-RAG-Mamba\container_env\docker-compose.yaml up -d
+
 1. Clone the repository and navigate to the project folder.
 2. Build and run the Docker containers:
    ```bash
