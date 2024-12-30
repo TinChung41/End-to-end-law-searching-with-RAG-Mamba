@@ -13,7 +13,8 @@ services:
       - ./elasticsearch/data:/usr/share/elasticsearch/data
 
   jupyter_container:
-    image: ubuntu_img  # Use your existing image
+    # image: ubuntu_img  # Use your existing image
+    build: .
     container_name: ubuntu_container_compose # Give it a name
     ports:
       - 8888:8888
