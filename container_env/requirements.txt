@@ -107,4 +107,5 @@ uritemplate==4.1.1
 urllib3==2.2.3
 wcwidth==0.2.13
 widgetsnbextension==4.0.13
-pandas
+pandas==2.2.3
+googletrans==4.0.0rc1
