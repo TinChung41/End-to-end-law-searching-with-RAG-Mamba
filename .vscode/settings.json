@@ -2,5 +2,6 @@
     "cSpell.words": [
         "dotenv",
         "genai"
-    ]
+    ],
+    "markdown-todo.sortByCount": false
 }

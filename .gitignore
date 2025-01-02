@@ -15,7 +15,9 @@ temp_evn/*
 temp_env/*
 !temp_env.keep
 
-
+#Windown randomfile
+env_aider/
+# deepseekV3.ipynb
 
 # C extensions
 *.so
