@@ -107,3 +107,5 @@ widgetsnbextension==4.0.13
 pandas
 googletrans==4.0.0rc1
 seaborn
+nltk==3.9.1
+sacrebleu==2.5.1
