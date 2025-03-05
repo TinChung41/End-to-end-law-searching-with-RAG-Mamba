@@ -1,0 +1,568 @@
+inspect why the fuck transformer not works
+run eval on the transformer and eval it 
+---------------------------------------------------------------------------
+ground_truth[0]
+{'generated_question': 'Các loại hình cơ sở giáo dục mầm non được quy định như thế nào trong Luật Giáo Dục?',
+ 'generated_answer': 'Cơ sở giáo dục mầm non bao gồm: 1. Nhà trẻ, nhóm trẻ độc lập nhận trẻ em từ 03 tháng tuổi đến 03 tuổi; 2. Trường mẫu giáo, lớp mẫu giáo độc lập nhận trẻ em từ 03 tuổi đến 06 tuổi; 3. Trường mầm non, lớp mầm non độc lập là cơ sở giáo dục kết hợp nhà trẻ và mẫu giáo, nhận trẻ em từ 03 tháng tuổi đến 06 tuổi.',
+ 'doc_id': 'a0fcdc5b',
+ 'law_title': 'Luật Giáo Dục'}
+title_content_vector_knn(ground_truth[0])
+[{'article_number': 'Điều 26',
+  'law_number': 'Luật số: 43/2019/QH14',
+  'chapter_title': 'Chương II',
+  'id': 'a0fcdc5b',
+  'title': 'Cơ sở giáo dục mầm non',
+  'law_title': 'Luật Giáo Dục',
+  'content': 'Cơ sở giáo dục mầm non bao gồm: 1. Nhà trẻ, nhóm trẻ độ...
+context = build_prompt(ground_truth[0], title_content_vector_knn(ground_truth[0]))
+print(italian_to_vietnamese(context))
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+Cell In[64], line 1
+----> 1 context = build_prompt(ground_truth[0], title_content_vector_knn(ground_truth[0]))
+      2 print(italian_to_vietnamese(context))
+
+Cell In[52], line 111
+    109 # Translate the query based on the model type
+    110 if model_type.lower() == "mamba":
+--> 111     translated_query = vietnamese_to_italian(query)  # Mamba: Vietnamese -> Italian
+    112 else:
+    113     translated_query = vietnamese_to_english(query)  # Transformer: Vietnamese -> English
+
+Cell In[59], line 73
+     71 if not text:
+     72     return ""
+---> 73 return translate_in_chunks(text, src='vi', dest='it')
+
+Cell In[59], line 54
+     51     return ""
+     53 if len(text) <= chunk_size:
+---> 54     return safe_translate(text, src=src, dest=dest)
+     56 chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+     57 translated_chunks = []
+...
+     13         return ""
+     15     try:
+     16         # Add a small delay to avoid rate limiting
+
+AttributeError: 'dict' object has no attribute 'strip'
+
+
+def format_search_results(search_results):
+    """
+    Formats the search results into a readable string.
+
+    Args:
+        search_results (list): A list of dictionaries, where each dictionary is a search result.
+
+    Returns:
+        str: The formatted search results string.
+    """
+    formatted_results = ""
+    for doc in search_results:
+        formatted_results += (
+            f"{doc['law_title']}\n"
+            f"{doc['law_number']}\n"
+            f"{doc['article_number']}\n"
+            f"{doc['title']}\n"
+            f"{doc['content']}\n\n"
+        )
+    return formatted_results.strip()
+
+def rag(query):
+    """
+    RAG function that works with both query formats
+    """
+    # Get search results
+    search_results = hybrid_search(query)
+    
+    # Extract the question depending on input format
+    if isinstance(query, str):
+        question = query
+    elif 'generated_question' in query:
+        question = query['generated_question']
+    elif 'questions' in query:
+        question = query['questions']
+    else:
+        raise ValueError("Query must contain either 'questions' or 'generated_question' field")
+    
+    # Translate the query to Italian
+    translated_query = vietnamese_to_italian(question)
+    
+    # Build context and get answer
+    context = build_prompt(translated_query, search_results)
+    answer = llm(context, translated_query)
+    
+    # Translate answer back to Vietnamese
+    final_answer = italian_to_vietnamese(answer)
+    
+    return final_answer
+
+def rag_with_search(query):
+    """
+    RAG function that returns both search results and answer
+    """
+    # Get search results
+    search_results = hybrid_search(query)
+    search_results_str = format_search_results(search_results)
+    
+    # Extract the question depending on input format
+    if isinstance(query, str):
+        question = query
+    elif 'generated_question' in query:
+        question = query['generated_question']
+    elif 'questions' in query:
+        question = query['questions']
+    else:
+        raise ValueError("Query must contain either 'questions' or 'generated_question' field")
+    
+    # Translate the query to Italian
+    translated_query = vietnamese_to_italian(question)
+    
+    # Build context and get answer
+    context = build_prompt(translated_query, search_results)
+    answer = llm(context, translated_query)
+    
+    # Combine the formatted search results and translated answer
+    return print(f"{search_results_str}\n\n DeepMount00/mamba_790_hf_qa:{italian_to_vietnamese(answer)}")
+---------------------------------------------------------------------------
+Bạn là một trợ lý nghiên cứu pháp lý.Trả lời câu hỏi: {'tạo_question': 'Các loại hÌnhNhóm trẻ ộc lập NHận trẻ em từ 03 Tháng Tuổi ến ến 03 Tuổi;2. Trường mẫu giái, lớp mẫu giáio ộc lập nhận trẻ em từ 03 tuổi ến ến 06 Tuổi;3.Giáio dục '}
+
+Build prompt seem useless for qa model 
+Add transformer and it rag function version look like a pain in the ass but doable
+
+either make the funct
+---------------------------------------------------------------------------p
+hybrid_search van chua chay duoc cho rag
+hybrid_search(ground_truth[0])
+
+
+---------------------------------------------------------------------------
+
+BadRequestError                           Traceback (most recent call last)
+Cell In[64], line 1
+----> 1 results['hybrid'] = evaluate(ground_truth, hybrid_search)
+
+Cell In[25], line 6, in evaluate(ground_truth, search_function)
+      4 for q in tqdm(ground_truth):
+      5     doc_id = q['document']
+----> 6     results = search_function(q)
+      7     relevance = [d['id'] == doc_id for d in results]
+      8     relevance_total.append(relevance)
+
+Cell In[63], line 71, in hybrid_search(q)
+     69 # Execute both searches
+     70 bm25_results = es_client.search(index=index_name, body=bm25_query)
+---> 71 knn_results = es_client.search(index=index_name, body=knn_query)
+     73 # Combine results
+     74 combined_results = {}
+
+File /usr/local/lib/python3.10/dist-packages/elasticsearch/_sync/client/utils.py:455, in _rewrite_parameters.<locals>.wrapper.<locals>.wrapped(*args, **kwargs)
+    452         except KeyError:
+    453             pass
+--> 455 return api(*args, **kwargs)
+
+File /usr/local/lib/python3.10/dist-packages/elasticsearch/_sync/client/__init__.py:4255, in Elasticsearch.search(self, index, aggregations, aggs, allow_no_indices, allow_partial_search_results, analyze_wildcard, analyzer, batched_reduce_size, ccs_minimize_roundtrips, collapse, default_operator, df, docvalue_fields, error_trace, expand_wildcards, explain, ext, fields, filter_path, force_synthetic_source, from_, highlight, human, ignore_throttled, ignore_unavailable, include_named_queries_score, indices_boost, knn, lenient, max_concurrent_shard_requests, min_compatible_shard_node, min_score, pit, post_filter, pre_filter_shard_size, preference, pretty, profile, q, query, rank, request_cache, rescore, rest_total_hits_as_int, retriever, routing, runtime_mappings, script_fields, scroll, search_after, search_type, seq_no_primary_term, size, slice, sort, source, source_excludes, source_includes, stats, stored_fields, suggest, suggest_field, suggest_mode, suggest_size, suggest_text, terminate_after, timeout, track_scores, track_total_hits, typed_keys, version, body)
+   4253 if __body is not None:
+   4254     __headers["content-type"] = "application/json"
+-> 4255 return self.perform_request(  # type: ignore[return-value]
+   4256     "POST",
+   4257     __path,
+   4258     params=__query,
+   4259     headers=__headers,
+   4260     body=__body,
+   4261     endpoint_id="search",
+   4262     path_parts=__path_parts,
+   4263 )
+
+File /usr/local/lib/python3.10/dist-packages/elasticsearch/_sync/client/_base.py:271, in BaseClient.perform_request(self, method, path, params, headers, body, endpoint_id, path_parts)
+    255 def perform_request(
+    256     self,
+    257     method: str,
+   (...)
+    264     path_parts: Optional[Mapping[str, Any]] = None,
+    265 ) -> ApiResponse[Any]:
+    266     with self._otel.span(
+    267         method,
+    268         endpoint_id=endpoint_id,
+    269         path_parts=path_parts or {},
+    270     ) as otel_span:
+--> 271         response = self._perform_request(
+    272             method,
+    273             path,
+    274             params=params,
+    275             headers=headers,
+    276             body=body,
+    277             otel_span=otel_span,
+    278         )
+    279         otel_span.set_elastic_cloud_metadata(response.meta.headers)
+    280         return response
+
+File /usr/local/lib/python3.10/dist-packages/elasticsearch/_sync/client/_base.py:352, in BaseClient._perform_request(self, method, path, params, headers, body, otel_span)
+    349         except (ValueError, KeyError, TypeError):
+    350             pass
+--> 352     raise HTTP_EXCEPTIONS.get(meta.status, ApiError)(
+    353         message=message, meta=meta, body=resp_body
+    354     )
+    356 # 'X-Elastic-Product: Elasticsearch' should be on every 2XX response.
+    357 if not self._verified_elasticsearch:
+    358     # If the header is set we mark the server as verified.
+
+BadRequestError: BadRequestError(400, 'search_phase_execution_exception', 'failed to create query: field [content_vector] does not exist in the mapping')
+
+def elastic_search_knn(field, vector, law_title):
+    knn = {
+        "field": field,
+        "query_vector": vector,
+        "k": 5,
+        "num_candidates": 10000,
+        "filter": {
+            "term": {
+                "law_title": law_title
+            }
+        }
+    }
+
+    search_query = {
+        "knn": knn,
+        "_source": ["law_title", "law_number", "chapter_title", "article_number", "title", "content","id"]
+    }
+
+    es_results = es_client.search(
+        index=index_name,
+        body=search_query
+    )
+    
+    result_docs = []
+    
+    for hit in es_results['hits']['hits']:
+        result_docs.append(hit['_source'])
+
+    return result_docs
+def question_vector_knn(q):
+    questions = q['questions']
+    law_title = q['law_title']
+
+    v_q = model.encode(questions)
+
+    return elastic_search_knn('content_vector', v_q, law_title)
+def title_content_vector_knn(q):
+    questions = q['questions']
+    law_title = q['law_title']
+
+    v_q = model.encode(questions)
+
+    return elastic_search_knn('title_content_vector', v_q, law_title)
+
+    def bm25_search(q):
+    questions = q['questions']
+    law_title = q['law_title']
+    search_query = {
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": questions,
+                        "fields": ["title", "content"]
+                    }
+                },
+                "filter": {
+                    "term": {"law_title": law_title}
+                }
+            }
+        },
+        "_source": ["law_title", "law_number", "chapter_title", "article_number", "title", "content", "id"]
+    }
+    
+    es_results = es_client.search(index=index_name, body=search_query)
+
+
+def bm25_search(q):
+    questions = q['questions']
+    law_title = q['law_title']
+    search_query = {
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": questions,
+                        "fields": ["title", "content"]
+                    }
+                },
+                "filter": {
+                    "term": {"law_title": law_title}
+                }
+            }
+        },
+        "_source": ["law_title", "law_number", "chapter_title", "article_number", "title", "content", "id"]
+    }
+    
+    es_results = es_client.search(index=index_name, body=search_query)
+    
+    return [hit['_source'] for hit in es_results['hits']['hits']]
+
+def bm25_search(q):
+    questions = q['questions']
+    law_title = q['law_title']
+    search_query = {
+        "query": {
+            "bool": {
+                "must": {
+                    "multi_match": {
+                        "query": questions,
+                        "fields": ["title", "content"]
+                    }
+                },
+                "filter": {
+                    "term": {"law_title": law_title}
+                }
+            }
+        },
+        "_source": ["law_title", "law_number", "chapter_title", "article_number", "title", "content", "id"]
+    }
+    
+    es_results = es_client.search(index=index_name, body=search_query)
+    
+    return [hit['_source'] for hit in es_results['hits']['hits']]
+def hybrid_search(q):
+    questions = q['questions']
+    law_title = q['law_title']
+    
+    # Get the query vector
+    v_q = model.encode(questions)
+    
+    # Convert vector to list format if it's numpy array
+    if hasattr(v_q, 'tolist'):
+        v_q = v_q.tolist()
+    
+    # First, do a BM25 search
+    bm25_query = {
+        "query": {
+            "bool": {
+                "should": [
+                    {"match": {"title": questions}},
+                    {"match": {"content": questions}}
+                ],
+                "filter": [
+                    {"term": {"law_title": law_title}}
+                ]
+            }
+        },
+        "_source": ["law_title", "law_number", "chapter_title", "article_number", "title", "content", "id"],
+        "size": 10
+    }
+    
+    # Then, do a KNN vector search, similar to your existing function
+    knn_query = {
+        "knn": {
+            "field": "content_vector",  # Use the same field as in your vector search
+            "query_vector": v_q,
+            "k": 10,
+            "num_candidates": 10000,
+            "filter": {
+                "term": {
+                    "law_title": law_title
+                }
+            }
+        },
+        "_source": ["law_title", "law_number", "chapter_title", "article_number", "title", "content", "id"]
+    }
+    
+    # Execute both searches
+    bm25_results = es_client.search(index=index_name, body=bm25_query)
+    knn_results = es_client.search(index=index_name, body=knn_query)
+    
+    # Combine results
+    combined_results = {}
+    
+    # Add BM25 results with a weight
+    for hit in bm25_results['hits']['hits']:
+        doc_id = hit['_source']['id']
+        score = hit['_score'] * 0.5  # Weight for BM25 results
+        combined_results[doc_id] = {
+            'source': hit['_source'],
+            'score': score
+        }
+    
+    # Add KNN results with a weight
+    for hit in knn_results['hits']['hits']:
+        doc_id = hit['_source']['id']
+        score = hit['_score'] * 0.5  # Weight for KNN results
+        
+        if doc_id in combined_results:
+            # If document is in both results, add scores
+            combined_results[doc_id]['score'] += score
+        else:
+            combined_results[doc_id] = {
+                'source': hit['_source'],
+                'score': score
+            }
+    
+    # Sort by combined score and get top 20
+    sorted_results = sorted(combined_results.values(), key=lambda x: x['score'], reverse=True)
+    top_results = [item['source'] for item in sorted_results[:20]]
+    
+    return top_results
+--------------------------------------------------------------------------------------------------------------------------
+ground_truth[0]
+{'generated_question': 'Các loại hình cơ sở giáo dục mầm non được quy định như thế nào trong Luật Giáo Dục?',
+ 'generated_answer': 'Cơ sở giáo dục mầm non bao gồm: 1. Nhà trẻ, nhóm trẻ độc lập nhận trẻ em từ 03 tháng tuổi đến 03 tuổi; 2. Trường mẫu giáo, lớp mẫu giáo độc lập nhận trẻ em từ 03 tuổi đến 06 tuổi; 3. Trường mầm non, lớp mầm non độc lập là cơ sở giáo dục kết hợp nhà trẻ và mẫu giáo, nhận trẻ em từ 03 tháng tuổi đến 06 tuổi.',
+ 'doc_id': 'a0fcdc5b',
+ 'law_title': 'Luật Giáo Dục'}
+
+ documents[0]
+ {'law_title': 'Luật Giáo Dục',
+ 'law_number': 'Luật số: 43/2019/QH14',
+ 'chapter_title': 'Chương I',
+ 'article_number': 'Điều 1',
+ 'title': 'Phạm vi điều chỉnh',
+ 'content': 'Luật này quy định về hệ thống giáo dục quốc dân; cơ sở giáo dục, nhà giáo, người học; quản lý nhà nước về giáo dục; quyền và trách nhiệm của cơ quan, tổ chức, cá nhân liên quan đến hoạt động giáo dục. ',
+ 'id': '75a9286e',
+ 'title_content_vector': array([-1.97882224e-02, -1.99339297e-02,  4.56860475e-02,  8.96888971e-02,
+
+
+--------------------------------------------------------------------------------------------------------------------------
+BadRequestError                           Traceback (most recent call last)
+Cell In[60], line 1
+----> 1 rag({'generated_question': 'Các loại hình cơ sở giáo dục mầm non được quy định như thế nào trong Luật Giáo Dục?',
+      2  'generated_answer': 'Cơ sở giáo dục mầm non bao gồm: 1. Nhà trẻ, nhóm trẻ độc lập nhận trẻ em từ 03 tháng tuổi đến 03 tuổi; 2. Trường mẫu giáo, lớp mẫu giáo độc lập nhận trẻ em từ 03 tuổi đến 06 tuổi; 3. Trường mầm non, lớp mầm non độc lập là cơ sở giáo dục kết hợp nhà trẻ và mẫu giáo, nhận trẻ em từ 03 tháng tuổi đến 06 tuổi.',
+      3  'doc_id': 'a0fcdc5b',
+      4  'law_title': 'Luật Giáo Dục'})
+BadRequestError: BadRequestError(400, 'search_phase_execution_exception', 'failed to create query: field [content_vector] does not exist in the mapping')
+
+Cell In[57], line 27
+     23 """
+     24 RAG function that works with both query formats
+     25 """
+     26 # Get search results
+---> 27 search_results = hybrid_search(query)
+     29 # Extract the question depending on input format
+     30 if isinstance(query, str):
+
+Cell In[56], line 107
+    105 # Execute both searches
+    106 bm25_results = es_client.search(index=index_name, body=bm25_query)
+--> 107 knn_results = es_client.search(index=index_name, body=knn_query)
+    109 # Combine results
+    110 combined_results = {}
+
+
+googletrans
+----> 6 rag_answer_llm = rag(rec)
+      7 doc_id = rec['doc_id']
+      8 original_doc = doc_idx[doc_id]
+
+Cell In[28], line 33
+     30 answer = llm(context, translated_query)
+     32 # Combine the formatted search results and translated answer with a newline separator
+---> 33 final_answer = italian_to_vietnamese(answer)
+     35 return final_answer
+
+Cell In[19], line 51
+     46 """
+     47 Translates Italian text to Vietnamese using the googletrans library.
+     48 No error handling is applied, so any issues will raise exceptions.
+     49 """
+     50 # Translate the text
+---> 51 translation = translator.translate(text, src='it', dest='vi')
+     53 # Return the translated text
+     54 return translation.text
+...
+    343 if (cls is None and object_hook is None and
+    344         parse_int is None and parse_float is None and
+    345         parse_constant is None and object_pairs_hook is None and not kw):
+
+import re
+import time
+from googletrans import Translator
+
+translator = Translator()
+
+def clean_text(text):
+    """
+    Cleans text by removing non-printable characters, normalizing whitespace,
+    and specifically handling problematic semicolons.
+    """
+    text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with single spaces
+    text = ''.join(c for c in text if c.isprintable())  # Remove non-printable characters
+    text = text.replace(';', ',')  # Replace semicolons with commas
+    return text
+
+def undo_clean_text(text):
+    """
+    Reverses the semicolon replacement done by clean_text.
+    """
+    text = text.replace(',', ';')  # Replace commas back to semicolons
+    return text
+
+def translate_in_chunks(text, chunk_size=4000):
+    """
+    Translates text in smaller chunks to avoid potential issues with large text.
+    """
+    if len(text) <= chunk_size:
+        return vietnamese_to_italian(text)
+
+    chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+    translated_chunks = [vietnamese_to_italian(chunk) for chunk in chunks]
+    return " ".join(translated_chunks)
+
+def vietnamese_to_italian(text):
+    """
+    Translates Vietnamese text to Italian using the googletrans library.
+    Handles potential None values returned by the translator.
+    """
+    translation = translator.translate(text, src='vi', dest='it')
+    
+    # Return the translated text
+    return translation.text
+
+def italian_to_vietnamese(text):
+    """
+    Translates Italian text to Vietnamese using the googletrans library.
+    No error handling is applied, so any issues will raise exceptions.
+    """
+    # Translate the text
+    translation = translator.translate(text, src='it', dest='vi')
+    
+    # Return the translated text
+    return translation.text
+
+def build_prompt(query, search_results):
+    prompt_template = """
+Sei un assistente di ricerca legale. Rispondi alla DOMANDA basandoti sul CONTESTO del database legale.
+Utilizza solo i fatti dal CONTESTO quando rispondi alla DOMANDA.
+
+CONTESTO:
+{context}
+""".strip()
+
+    # Translate the query to Italian
+    translated_query = vietnamese_to_italian(query)
+
+    context = ""
+    # Prioritize the first document (best match)
+    if search_results:
+        first_doc = search_results[0]
+        # Translate each field, cleaning the text first
+        translated_law_title = vietnamese_to_italian(clean_text(first_doc['law_title']))
+        translated_title = vietnamese_to_italian(clean_text(first_doc['title']))
+        translated_content = translate_in_chunks(clean_text(first_doc['content']))
+        translated_content = undo_clean_text(translated_content)
+
+        # Add the first document to the context with a note about its priority
+        context += f"PRIMA LEGGE (MIGLIOR RISULTATO):\n"
+        context += f"titolo di legge: {translated_law_title}\n titolo: {translated_title}\n legge: {translated_content}\n\n"
+
+    # Add the remaining documents to the context
+    for doc in search_results[1:]:
+        # Translate each field, cleaning the text first
+        translated_law_title = vietnamese_to_italian(clean_text(doc['law_title']))
+        translated_title = vietnamese_to_italian(clean_text(doc['title']))
+        translated_content = translate_in_chunks(clean_text(doc['content']))
+        translated_content = undo_clean_text(translated_content)
+
+        context += f"titolo di legge: {translated_law_title}\n titolo: {translated_title}\n legge: {translated_content}\n\n"
+
+    # Use the correct key 'question' here
+    prompt = prompt_template.format(question=translated_query, context=context).strip()
+    return prompt

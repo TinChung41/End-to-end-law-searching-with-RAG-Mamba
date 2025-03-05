@@ -105,7 +105,10 @@ urllib3==2.2.3
 wcwidth==0.2.13
 widgetsnbextension==4.0.13
 pandas
-googletrans==4.0.0rc1
+googletrans==4.0.2
 seaborn
 nltk==3.9.1
 sacrebleu==2.5.1
+streamlit== 1.42.2
+retry==0.9.2
+deep-translator==1.11.4
